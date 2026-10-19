@@ -2,13 +2,29 @@
 
 **A fast, ad-free, Apple TV–style home screen for Xiaomi Mi TVs running HyperOS / Android 14, plus the scripts that debloat the TV and keep it that way.**
 
-![Clean Home on the TV](docs/screenshots/01-home.jpg)
+![Before: Xiaomi's stock PatchWall home. After: Clean Home](docs/screenshots/before-after.jpg)
 
 Xiaomi's stock PatchWall home is slow and full of ads and Chinese-market content. This project replaces it with **Clean Home**, a small native launcher built for a TV remote. It shows a clock, your four favourite apps, a row of popular movies from Stremio, all your other apps, and ambient wallpapers. Every screen above was captured on the real TV.
 
 It runs on a Xiaomi Mi TV (model family MiTV-MFTR0, Chinese firmware, Android 14, MediaTek, 32-bit ARM, 1080p). Nothing is rooted, and every change can be undone.
 
 ---
+
+## Before and after
+
+| Before: Xiaomi PatchWall (stock) | After: Clean Home |
+|---|---|
+| ![The stock Xiaomi PatchWall home screen](docs/screenshots/00-before-stock-launcher.jpg) | ![The Clean Home launcher](docs/screenshots/01-home.jpg) |
+
+| | Stock PatchWall | Clean Home |
+|---|---|---|
+| **Home screen** | Chinese streaming catalogue, full-screen drama banner | Clock, weather and your own apps over an ambient wallpaper |
+| **Ads and upsells** | "VIP" paywall badges and a sales promo pill | None |
+| **Language** | Chinese only | English |
+| **Your apps** | Behind the 应用 (Apps) menu | Dock for four favourites, plus a grid of the rest |
+| **Inputs** | Behind the 信号源 (Source) menu | Inputs pill: HDMI 1–4, AV, Live TV |
+| **Background services** | Telemetry, push, ads, shopping, cleaner and more | Disabled (and reversible), see [`debloat-list.txt`](debloat-list.txt) |
+| **Network** | Loads its streaming catalogue, artwork and promotions | Only weather and the Stremio row, only when Home opens |
 
 ## Features
 
