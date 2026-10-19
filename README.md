@@ -6,7 +6,7 @@
 
 Xiaomi's stock PatchWall home is slow and full of ads and Chinese-market content. This project replaces it with **Clean Home**, a small native launcher built for a TV remote. It shows a clock, your four favourite apps, a row of popular movies from Stremio, all your other apps, and ambient wallpapers. Every screen above was captured on the real TV.
 
-It runs on a Xiaomi Mi TV (model family MiTV-MFTR0, Chinese firmware, Android 14, MediaTek, 32-bit ARM, 1080p). Nothing is rooted, and every change can be undone.
+It was built and tested on a **Xiaomi Mi TV, model MiTV-MFTR0** (Chinese-market firmware, Xiaomi HyperOS 3 on Android 14, 4K panel); full specs are [below](#the-tv). Nothing is rooted, and every change can be undone.
 
 ---
 
@@ -82,6 +82,42 @@ docs/                Setup guide, launcher internals, build notes, screenshots
 ```
 
 Not in the repository: third-party APKs (`apks/`; sources and checksums are listed in the [setup guide](docs/SETUP-GUIDE.md#files)), per-TV settings backups (`backup/`), the ADB key, and the 1 GB local toolchain (`tools/jdk`, `tools/android-sdk`, ...).
+
+## The TV
+
+Everything here was built and tested on this set. These details come from
+the TV's own system properties (`getprop`, `/proc/meminfo`, `wm size`):
+
+| | |
+|---|---|
+| **Brand** | Xiaomi (Mi TV) |
+| **Model** | `MiTV-MFTR0` (device codename `freeguy`, board `RZXJ`) |
+| **Market** | Chinese-market firmware: PatchWall home, Chinese interface, GITV/iQIYI streaming |
+| **Operating system** | Xiaomi HyperOS 3 (build `OS3.0.107.0.UFTMATV`) on **Android 14** (API 34), security patch 2025-07-05 |
+| **Processor** | MediaTek MT9653 (platform `mt5879`), 4 CPU cores, 32-bit ARM apps only (`armeabi-v7a`) |
+| **Graphics** | ARM Mali-G52, OpenGL ES 3.2 |
+| **Memory / storage** | 4 GB RAM / 64 GB (about 54 GB available for apps and data) |
+| **Display** | 4K panel (3840×2160). Android draws its interface at 1920×1080, 320 dpi, 60 Hz, as most 4K TVs do |
+| **Remote** | Xiaomi Bluetooth voice remote |
+| **Google services** | No Google TV / Play Store (the ROM blocks it); Google Play services are present |
+
+**Check your own TV** with the network ADB tool:
+
+```bash
+tools/.venv/bin/python tools/tv.py shell "getprop ro.product.model; getprop ro.build.display.id; getprop ro.build.version.release"
+```
+
+**Will it work on another TV?**
+
+- **Same model (MiTV-MFTR0, any screen size):** yes, everything works. The
+  [new TV prompt](docs/NEW-TV-PROMPT.md) walks through setting up a second one.
+- **Other Xiaomi TVs on HyperOS / Android 14:** probably. The Xiaomi-specific
+  parts are the Home-button workaround, the standby whitelist and the input
+  switching (which uses Xiaomi's `tvplayer`). Check `debloat-list.txt`
+  against your TV's packages before running it.
+- **Any other Android 14 TV:** the launcher itself installs and runs, since it
+  only needs `minSdk 34`. Skip `debloat.sh`; on most TVs you can simply pick
+  Clean Home as the home app. Inputs may need changes.
 
 ## Quick start
 

@@ -3,7 +3,9 @@
 Clean Home (`com.cleanhome.tv`) is a single-activity Android app written in
 plain Java. Its only dependency is AndroidX RecyclerView; there are no image
 loaders, frameworks or Kotlin. It targets Android 14 (`minSdk 34`) and has
-been tuned on a 1080p Xiaomi Mi TV with a Mali-G52 GPU.
+been tuned on a Xiaomi Mi TV (`MiTV-MFTR0`, MediaTek MT9653, Mali-G52 GPU,
+4K panel with the interface drawn at 1920×1080). See
+[The TV](../README.md#the-tv) for full specs.
 
 ## Screen layout
 
