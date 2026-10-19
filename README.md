@@ -37,6 +37,7 @@ It was built and tested on a **Xiaomi Mi TV, model MiTV-MFTR0** (Chinese-market 
 | **Now Playing** | While music or video plays, a card under the top bar shows the artwork, title and artist, with previous / play-pause / next controls. |
 | **Inputs** | One menu for HDMI 1–4, AV and Live TV. |
 | **Wallpaper gallery** | 12 original ambient wallpapers in a PS5-like style, previewed full screen as you browse, or use your own photo. |
+| **Screensaver** | After 2 minutes idle on Home, the wallpapers cycle full screen with a slow zoom, a large clock, the date and the weather. Any key closes it. |
 | **Made for the remote** | Every key press moves exactly one step, even with this TV's laggy Bluetooth remote. A glass highlight glides to whatever is focused. |
 | **Light** | About 110 MB of memory with posters and wallpaper loaded, 0% CPU and no redraws while idle, and no background polling. Navigation renders with no dropped frames on the TV's Mali-G52 GPU. |
 | **Takes over Home** | This ROM won't let a third-party app be the home screen, so the Home button is redirected by a small accessibility service (explained below). |
@@ -150,6 +151,7 @@ To undo everything: `./restore.sh` puts back every disabled app and the stock Xi
 | **New wallpaper designs** | Add a function to [`tools/make-wallpapers.py`](tools/make-wallpapers.py), run it, then `./install.sh`. |
 | **Weather location** | Latitude and longitude in [`weather.xml`](launcher/app/src/main/res/values/weather.xml) (Kumasi by default). |
 | **Movie row size / refresh** | `COUNT` and `REFRESH_MS` in [`Movies.java`](launcher/app/src/main/java/com/cleanhome/tv/Movies.java). |
+| **Screensaver delay / sleep** | The delay is the TV's own `screen_saver_timeout` (2 min). The TV still sleeps after `screen_off_timeout` (5 min); raise that to keep the screensaver up longer, never set it very low. Slide time: `SAVER_SLIDE_MS` in [`HomeActivity.java`](launcher/app/src/main/java/com/cleanhome/tv/HomeActivity.java). |
 | **What gets debloated** | One package per line in [`debloat-list.txt`](debloat-list.txt). |
 
 ## How it works
@@ -158,6 +160,7 @@ To undo everything: `./restore.sh` puts back every disabled app and the stock Xi
 - **Surviving standby.** Xiaomi force-stops every non-system app when the TV goes to standby. The launcher is put on Xiaomi's own standby whitelist, so it is still running when you wake the TV.
 - **Smooth on a slow GPU.** The wallpaper's dimming and shading are painted into the image once, instead of as layers redrawn every frame. That cut GPU time per frame from about 17 ms to 10 ms. All rows stay ready off screen, so scrolling never rebuilds them mid-animation.
 - **Background audio.** Android's cached-app freezer was pausing SmartTube when it played behind the home screen. `install.sh` turns the freezer off.
+- **Screensaver.** Android's screensavers can't run on this firmware (`config_dreamsSupported` is off) and Xiaomi's screensaver app is removed by the debloat, so the TV used to go straight to sleep. The launcher shows its own screensaver instead, only on the home screen.
 - **Private by default.** The launcher only goes online for the weather (Open-Meteo) and the Stremio catalogue, and only when Home opens. There are no accounts, analytics or ads.
 
 Read [docs/LAUNCHER.md](docs/LAUNCHER.md) for the launcher's design, code map and permissions.

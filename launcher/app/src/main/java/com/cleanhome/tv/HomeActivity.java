@@ -147,6 +147,13 @@ public class HomeActivity extends Activity {
     private String wifiLabel = "Wi-Fi";
     private boolean visible;
     private int lastKey;
+    // Screensaver (the TV's own Android screensavers are disabled in this firmware).
+    private static final long SAVER_SLIDE_MS = 20_000;
+    private final android.os.Handler ui = new android.os.Handler(android.os.Looper.getMainLooper());
+    private View saver;
+    private ImageView saverA, saverB;
+    private TextView saverClock, saverDate, saverName;
+    private int saverIdx;
     private long lastKeyTime;
 
     private ConnectivityManager connectivity;
@@ -176,6 +183,15 @@ public class HomeActivity extends Activity {
         font(findViewById(R.id.gallery_title), 400);
         font(galleryName, 300);
         font(findViewById(R.id.gallery_hint), 300);
+        saver = findViewById(R.id.saver);
+        saverA = findViewById(R.id.saver_a);
+        saverB = findViewById(R.id.saver_b);
+        saverClock = findViewById(R.id.saver_clock);
+        saverDate = findViewById(R.id.saver_date);
+        saverName = findViewById(R.id.saver_name);
+        font(saverClock, 150);
+        font(saverDate, 300);
+        font(saverName, 300);
         ((HorizontalScrollView) findViewById(R.id.gallery_scroll))
                 .setOnScrollChangeListener((v, x, y, ox, oy) -> highlight.poke());
 
@@ -250,12 +266,15 @@ public class HomeActivity extends Activity {
         loadWallpaper();
         Movies.refreshIfStale(this, io, this::loadMovies);
         nowPlaying.start();
+        resetIdle();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(timeReceiver);
+        ui.removeCallbacks(startSaver);
+        hideSaver();
         if (section == PLAYER) closeNowPlaying(false);
         nowPlaying.stop();
         if (section == MENU) closeMenu();
@@ -276,6 +295,8 @@ public class HomeActivity extends Activity {
         // an app keeps the remembered tile. Android pauses the activity before
         // delivering a new intent, so "still visible" is the signal that we were
         // already on screen.
+        hideSaver();
+        resetIdle();
         if (visible) {
             if (section == MENU) closeMenu();
             if (section == GALLERY) closeGallery(false, false);
@@ -299,6 +320,7 @@ public class HomeActivity extends Activity {
         @Override
         public void onReceive(Context c, Intent i) {
             updateClock();
+            updateSaverClock();
         }
     };
 
@@ -654,6 +676,15 @@ public class HomeActivity extends Activity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent e) {
         int k = e.getKeyCode();
+        // Any key wakes the screensaver; that key is used up.
+        if (saver.getVisibility() == View.VISIBLE) {
+            if (e.getAction() == KeyEvent.ACTION_UP) {
+                hideSaver();
+                resetIdle();
+            }
+            return true;
+        }
+        resetIdle();
         boolean ours = k == KeyEvent.KEYCODE_DPAD_UP || k == KeyEvent.KEYCODE_DPAD_DOWN
                 || k == KeyEvent.KEYCODE_DPAD_LEFT || k == KeyEvent.KEYCODE_DPAD_RIGHT
                 || isSelect(k) || k == KeyEvent.KEYCODE_BACK;
@@ -1302,6 +1333,104 @@ public class HomeActivity extends Activity {
         date.setText(new SimpleDateFormat("EEEE, MMMM d", Locale.US).format(now));
         int h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
         greeting.setText(h < 5 ? "Good night" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening");
+    }
+
+    // ---------------------------------------------------------------- screensaver
+
+    /** Idle time before the screensaver: the TV's own setting (2 minutes by default). */
+    private long saverDelay() {
+        return Settings.System.getLong(getContentResolver(), "screen_saver_timeout", 120_000L);
+    }
+
+    private void resetIdle() {
+        ui.removeCallbacks(startSaver);
+        if (visible) ui.postDelayed(startSaver, saverDelay());
+    }
+
+    private final Runnable startSaver = this::showSaver;
+
+    private final Runnable nextSlide = new Runnable() {
+        @Override
+        public void run() {
+            List<String> keys = new ArrayList<>(art().keySet());
+            if (keys.isEmpty() || saver.getVisibility() != View.VISIBLE) return;
+            saverIdx = (saverIdx + 1) % keys.size();
+            showSlide(keys.get(saverIdx), true);
+            ui.postDelayed(this, SAVER_SLIDE_MS);
+        }
+    };
+
+    private void showSaver() {
+        if (!visible || saver.getVisibility() == View.VISIBLE) return;
+        if (section == MENU) closeMenu();
+        if (section == GALLERY) closeGallery(false, false);
+        if (section == PLAYER) closeNowPlaying(false);
+        List<String> keys = new ArrayList<>(art().keySet());
+        // Start on the wallpaper after the one on Home, so it visibly changes.
+        saverIdx = keys.isEmpty() ? 0 : (keys.indexOf(chosenWallpaper()) + 1 + keys.size()) % keys.size();
+        updateSaverClock();
+        saverA.setImageDrawable(null);
+        saverB.setImageDrawable(null);
+        saverB.setAlpha(0f);
+        saver.setAlpha(0f);
+        saver.setVisibility(View.VISIBLE);
+        saver.animate().alpha(1f).setDuration(1200).start();
+        if (!keys.isEmpty()) showSlide(keys.get(saverIdx), false);
+        ui.postDelayed(nextSlide, SAVER_SLIDE_MS);
+    }
+
+    private void hideSaver() {
+        ui.removeCallbacks(nextSlide);
+        if (saver == null || saver.getVisibility() != View.VISIBLE) return;
+        saver.animate().cancel();
+        saver.setVisibility(View.GONE);
+        saverA.animate().cancel();
+        saverB.animate().cancel();
+        saverA.setImageDrawable(null);   // frees the two full-screen bitmaps
+        saverB.setImageDrawable(null);
+    }
+
+    /** Decodes a wallpaper off the UI thread and fades it in with a slow zoom. */
+    private void showSlide(String key, boolean crossfade) {
+        saverName.setText(wallpaperLabel(key));
+        decoder.execute(() -> {
+            Bitmap b = decodeArt(key);
+            runOnUiThread(() -> {
+                if (b == null || saver.getVisibility() != View.VISIBLE) return;
+                ImageView front = crossfade && saverA.getDrawable() != null ? saverB : saverA;
+                front.setImageBitmap(b);
+                front.setScaleX(1f);
+                front.setScaleY(1f);
+                front.animate().scaleX(1.06f).scaleY(1.06f).setDuration(SAVER_SLIDE_MS + 2000)
+                        .setInterpolator(new android.view.animation.LinearInterpolator()).start();
+                if (front == saverB) {
+                    saverB.setAlpha(0f);
+                    saverB.animate().alpha(1f).setDuration(1500).withEndAction(() -> {
+                        // Move the new picture to the base layer, keep its zoom going.
+                        saverA.animate().cancel();
+                        saverA.setImageBitmap(b);
+                        saverA.setScaleX(saverB.getScaleX());
+                        saverA.setScaleY(saverB.getScaleY());
+                        saverA.animate().scaleX(1.06f).scaleY(1.06f)
+                                .setDuration(Math.max(1000, SAVER_SLIDE_MS - 1000))
+                                .setInterpolator(new android.view.animation.LinearInterpolator()).start();
+                        saverB.animate().cancel();
+                        saverB.setAlpha(0f);
+                        saverB.setImageDrawable(null);
+                    }).start();
+                }
+            });
+        });
+    }
+
+    private void updateSaverClock() {
+        if (saverClock == null) return;
+        Date now = new Date();
+        boolean h24 = DateFormat.is24HourFormat(this);
+        saverClock.setText(new SimpleDateFormat(h24 ? "H:mm" : "h:mm", Locale.US).format(now));
+        Weather w = Weather.cached(this);
+        String d = new SimpleDateFormat("EEEE, MMMM d", Locale.US).format(now);
+        saverDate.setText(w == null ? d : d + "   \u00B7   " + w.tempC + "\u00B0");
     }
 
     // ---------------------------------------------------------------- network

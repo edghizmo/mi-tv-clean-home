@@ -142,4 +142,63 @@
         android:id="@+id/menu_highlight"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+    <!-- Screensaver: after the TV's idle time on Home, the wallpapers cycle
+         full screen with the time. Any key closes it. -->
+    <FrameLayout
+        android:id="@+id/saver"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FF000000"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/saver_a"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+
+        <ImageView
+            android:id="@+id/saver_b"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:alpha="0" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|start"
+            android:layout_marginStart="64dp"
+            android:layout_marginBottom="52dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/saver_clock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFFFF"
+                android:textSize="96sp"
+                android:includeFontPadding="false"
+                android:letterSpacing="-0.02" />
+
+            <TextView
+                android:id="@+id/saver_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textColor="#CCFFFFFF"
+                android:textSize="20sp"
+                android:includeFontPadding="false" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/saver_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="64dp"
+            android:layout_marginBottom="56dp"
+            android:textColor="#99FFFFFF"
+            android:textSize="16sp" />
+    </FrameLayout>
 </FrameLayout>
