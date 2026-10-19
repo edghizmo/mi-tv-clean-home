@@ -1,0 +1,6 @@
+# Python packages for tools/tv.py (ADB over the network) and
+# tools/make-wallpapers.py (the wallpaper pack). Python 3.12.
+adb-shell==0.4.4
+rsa==4.9.1
+numpy==2.5.4
+pillow==13.0.0

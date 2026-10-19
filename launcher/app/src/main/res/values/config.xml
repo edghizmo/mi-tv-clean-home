@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      The four dock apps, left to right. Each entry is either a package name
+      (its launcher activity is used) or "package/full.activity.Name" for apps
+      that have no launcher entry. Edit, then run ./install.sh.
+    -->
+    <string-array name="dock_apps">
+        <item>com.stremio.one</item>
+        <item>com.mm.droid.livetv.wakatv</item>
+        <item>com.spotify.tv.android</item>
+        <item>org.smarttube.stable</item>
+    </string-array>
+
+    <!--
+      Apps that have no launcher entry but should still appear in the grid,
+      as "package/full.activity.Name".
+    -->
+    <string-array name="extra_apps">
+        <item>com.xiaomi.mitv.mediaexplorer/com.xiaomi.mitv.mediaexplorer.NewScraperMainEntryActivity</item>
+    </string-array>
+
+    <!-- Friendly names for apps whose own label is missing or untranslated. -->
+    <string-array name="label_overrides">
+        <item>org.smarttube.stable=SmartTube</item>
+        <item>com.xiaomi.mitv.mediaexplorer=Media Player</item>
+        <item>com.mm.droid.livetv.wakatv=WakaTV</item>
+        <item>com.mitv.gallery=Gallery</item>
+        <item>com.xiaomi.mitv.calendar=Calendar</item>
+    </string-array>
+
+    <!-- Packages never shown in the app grid (settings have their own pill). -->
+    <string-array name="hidden_apps">
+        <item>com.android.tv.settings</item>
+        <item>com.xiaomi.mitv.settings</item>
+        <item>com.mitv.tvhome</item>
+    </string-array>
+</resources>

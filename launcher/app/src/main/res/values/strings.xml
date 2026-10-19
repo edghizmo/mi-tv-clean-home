@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_key_service_desc">Makes the Home button open the Home launcher.</string>
+</resources>

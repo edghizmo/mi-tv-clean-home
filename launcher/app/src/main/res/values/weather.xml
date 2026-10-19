@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Weather location (Kumasi, Ghana). Change and run ./install.sh to move it. -->
+    <string name="weather_latitude" translatable="false">6.6885</string>
+    <string name="weather_longitude" translatable="false">-1.6244</string>
+</resources>

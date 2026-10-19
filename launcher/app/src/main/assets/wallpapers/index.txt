@@ -1,0 +1,12 @@
+midnight=Midnight
+aurora=Aurora
+nebula=Nebula
+ember=Ember
+ocean=Ocean Light
+dusk=Dusk Waves
+graphite=Graphite
+sakura=Sakura
+forest=Forest Mist
+cosmic=Cosmic Rays
+dunes=Desert Dusk
+polar=Polar Night

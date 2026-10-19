@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF000000"
+    android:clipChildren="false">
+
+    <ImageView
+        android:id="@+id/wallpaper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
+
+    <!-- Second layer, only used while crossfading to another wallpaper. -->
+    <ImageView
+        android:id="@+id/wallpaper_next"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:visibility="gone" />
+
+    <!-- The dim and the scrims (scrim_top / scrim_bottom) are painted into the
+         wallpaper bitmap itself, see HomeActivity.bakeWallpaper. -->
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingStart="48dp"
+        android:paddingEnd="48dp"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        android:focusable="false"
+        android:descendantFocusability="blocksDescendants" />
+
+    <!-- Wallpaper gallery: opened from the Wallpaper pill. The home screen
+         fades out so the focused wallpaper previews full screen behind it. -->
+    <FrameLayout
+        android:id="@+id/gallery"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:visibility="gone">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="340dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/scrim_bottom" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginBottom="36dp"
+            android:orientation="vertical"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <TextView
+                android:id="@+id/gallery_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="60dp"
+                android:text="Wallpaper"
+                android:textColor="#99FFFFFF"
+                android:textSize="16sp"
+                android:includeFontPadding="false" />
+
+            <TextView
+                android:id="@+id/gallery_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="60dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="10dp"
+                android:textColor="#FFFFFFFF"
+                android:textSize="36sp"
+                android:includeFontPadding="false"
+                android:singleLine="true" />
+
+            <HorizontalScrollView
+                android:id="@+id/gallery_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:overScrollMode="never"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:focusable="false"
+                android:descendantFocusability="blocksDescendants">
+
+                <LinearLayout
+                    android:id="@+id/gallery_strip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingStart="48dp"
+                    android:paddingEnd="48dp"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false" />
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/gallery_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="60dp"
+                android:layout_marginTop="8dp"
+                android:text="OK to set  ·  Back to cancel"
+                android:textColor="#80FFFFFF"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <com.cleanhome.tv.GlassHighlight
+        android:id="@+id/highlight"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:id="@+id/inputs_menu"
+        android:layout_width="230dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/dropdown_bg"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:elevation="0dp"
+        android:visibility="gone" />
+
+    <!-- Drawn above the menu so the glass highlight shows on its rows too. -->
+    <com.cleanhome.tv.GlassHighlight
+        android:id="@+id/menu_highlight"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</FrameLayout>

@@ -1,0 +1,32 @@
+# Secrets: the ADB key this computer uses to control the TV
+tools/adbkey
+tools/adbkey.pub
+
+# Local toolchain (about 1 GB; see docs/BUILDING.md)
+tools/.venv/
+tools/jdk/
+tools/android-sdk/
+tools/gradle-*/
+tools/python/
+tools/uv
+tools/gh/
+
+# Third-party APKs (not ours to redistribute; sources listed in docs/SETUP-GUIDE.md)
+apks/
+
+# Per-TV settings snapshots and logs
+backup/
+
+# Working screenshots (curated ones live in docs/screenshots/)
+shots/
+
+# Build output
+launcher/.gradle/
+launcher/build/
+launcher/app/build/
+launcher/local.properties
+*.apk
+*.apkm
+
+.DS_Store
+.claude/

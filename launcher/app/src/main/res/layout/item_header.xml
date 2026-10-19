@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <!-- Ambient glow behind the hero title; a radial gradient squashed into an ellipse. -->
+    <View
+        android:id="@+id/glow"
+        android:layout_width="760dp"
+        android:layout_height="760dp"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="-220dp"
+        android:layout_marginBottom="-150dp"
+        android:scaleY="0.42"
+        android:alpha="0" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_marginTop="34dp"
+        android:layout_marginStart="10dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/greeting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#99FFFFFF"
+            android:textSize="17sp"
+            android:includeFontPadding="false" />
+
+        <TextView
+            android:id="@+id/clock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="#FFFFFFFF"
+            android:textSize="86sp"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.02" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#B3FFFFFF"
+                android:textSize="17sp"
+                android:includeFontPadding="false" />
+
+            <!-- Weather: icon + temperature, hidden until there is a fresh reading. -->
+            <LinearLayout
+                android:id="@+id/weather"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/weather_icon"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:alpha="0.85" />
+
+                <TextView
+                    android:id="@+id/weather_temp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="17sp"
+                    android:includeFontPadding="false" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Top right: the pills, with the Now Playing card right-aligned below them. -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="4dp"
+        android:orientation="vertical"
+        android:gravity="end"
+        android:clipChildren="false">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:clipChildren="false">
+
+        <LinearLayout android:id="@+id/pill_inputs" style="@style/Pill">
+            <ImageView style="@style/PillIcon" android:src="@drawable/ic_inputs" />
+            <TextView android:id="@+id/pill_inputs_text" style="@style/PillText" android:text="Inputs" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/pill_wifi" style="@style/Pill" android:layout_marginStart="10dp">
+            <ImageView style="@style/PillIcon" android:src="@drawable/ic_wifi" />
+            <TextView android:id="@+id/wifi_name" style="@style/PillText" android:text="Wi-Fi" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/pill_wallpaper" style="@style/Pill" android:layout_marginStart="10dp">
+            <ImageView style="@style/PillIcon" android:src="@drawable/ic_wallpaper" />
+            <TextView android:id="@+id/pill_wallpaper_text" style="@style/PillText" android:text="Wallpaper" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/pill_settings" style="@style/Pill" android:layout_marginStart="10dp">
+            <ImageView style="@style/PillIcon" android:src="@drawable/ic_settings" />
+            <TextView android:id="@+id/pill_settings_text" style="@style/PillText" android:text="Settings" />
+        </LinearLayout>
+    </LinearLayout>
+
+        <!-- Now Playing: shown under the pills while media is playing or paused.
+             Down from a pill reaches it; OK opens the controls. -->
+        <LinearLayout
+            android:id="@+id/pill_now"
+            android:layout_width="wrap_content"
+            android:layout_height="52dp"
+            android:layout_marginTop="14dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="16dp"
+            android:background="@drawable/now_card_bg"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/now_pill_art"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:scaleType="centerCrop"
+                android:background="@drawable/now_art_bg"
+                android:clipToOutline="true" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="11dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/now_pill_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxWidth="300dp"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="14sp"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false" />
+
+                <TextView
+                    android:id="@+id/now_pill_sub"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:maxWidth="300dp"
+                    android:textColor="#A6FFFFFF"
+                    android:textSize="12sp"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/now_pill_icon"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="14dp"
+                android:alpha="0.9"
+                android:src="@drawable/ic_music" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Now Playing dropdown: opened from the Now Playing pill, positioned under it in code. -->
+    <com.cleanhome.tv.FrostedPanel
+        android:id="@+id/now_playing"
+        android:layout_width="480dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="14dp"
+        android:visibility="gone"
+        android:clipChildren="false">
+
+        <ImageView
+            android:id="@+id/np_art"
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/card_bg" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="14dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/np_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFFFF"
+                android:textSize="17sp"
+                android:singleLine="true"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/np_subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:textColor="#A6FFFFFF"
+                android:textSize="14sp"
+                android:singleLine="true"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <ImageView android:id="@+id/np_prev" style="@style/MediaButton" android:src="@drawable/ic_prev" />
+        <ImageView android:id="@+id/np_play" style="@style/MediaButton" android:src="@drawable/ic_play" />
+        <ImageView android:id="@+id/np_next" style="@style/MediaButton" android:src="@drawable/ic_next" />
+    </com.cleanhome.tv.FrostedPanel>
+
+
+    <!-- Hero title stacked on the dock band, so the band can never cover it. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="26dp"
+        android:orientation="vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <TextView
+            android:id="@+id/hero"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:layout_marginBottom="20dp"
+            android:textColor="#FFFFFFFF"
+            android:textSize="46sp"
+            android:includeFontPadding="false"
+            android:singleLine="true" />
+
+        <com.cleanhome.tv.FrostedPanel
+            android:id="@+id/dock"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingTop="18dp"
+            android:paddingBottom="8dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
+    </LinearLayout>
+</FrameLayout>

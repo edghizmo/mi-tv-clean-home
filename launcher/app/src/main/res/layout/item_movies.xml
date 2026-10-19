@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Popular on Stremio": one full-width row between the dock and the app grid. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <TextView
+        android:id="@+id/movies_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="20dp"
+        android:text="Popular on Stremio"
+        android:textColor="#CCFFFFFF"
+        android:textSize="19sp"
+        android:includeFontPadding="false" />
+
+    <!-- Runs to the screen edges, so posters scroll off the sides. -->
+    <HorizontalScrollView
+        android:id="@+id/movies_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="-48dp"
+        android:layout_marginEnd="-48dp"
+        android:scrollbars="none"
+        android:overScrollMode="never"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:focusable="false"
+        android:descendantFocusability="blocksDescendants">
+
+        <LinearLayout
+            android:id="@+id/movies_strip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="48dp"
+            android:paddingEnd="48dp"
+            android:paddingBottom="12dp"
+            android:clipChildren="false"
+            android:clipToPadding="false" />
+    </HorizontalScrollView>
+</LinearLayout>
