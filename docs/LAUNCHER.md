@@ -66,10 +66,13 @@ the list scrolls, and the spring only covers the jump between tiles.
 | `AspectFrame.java` | 16:9 frame for app tiles |
 | `AppEntry.java` | Loads dock and grid apps (banners, icons, labels, accent colour from the artwork) |
 | `Movies.java` | Fetches and caches "Popular on Stremio" (Cinemeta catalogue and posters) |
+| `Waka.java` | "Continue on WakaTV": what was watched, progress, backdrops, and the title to steer WakaTV back to |
+| `VoiceAssistant.java` | Records the remote's microphone while the voice button is held; Vosk recognition with chimes |
+| `VoiceCommands.java` | Turns recognised speech into actions: open apps, media keys, inputs, SmartTube search |
 | `Weather.java` | Current temperature and conditions from Open-Meteo |
 | `NowPlaying.java` | Watches media sessions; play/pause/next/previous |
 | `MediaListener.java` | Empty notification listener, required to read other apps' media sessions |
-| `HomeKeyService.java` | Accessibility service that brings the launcher up on Home, at boot, and over Xiaomi's home |
+| `HomeKeyService.java` | Accessibility service that brings the launcher up on Home, at boot, and over Xiaomi's home; also catches the voice button and reads WakaTV's screens |
 | `ServiceGuard.java` | Switches `HomeKeyService` back on if the system turned it off |
 | `BootReceiver.java` | Opens the launcher after boot and after an update |
 
@@ -112,12 +115,13 @@ instead.
 
 | Permission | Why | Granted by |
 |---|---|---|
-| `INTERNET`, `ACCESS_NETWORK_STATE` | Weather and the Stremio row | Install |
+| `INTERNET`, `ACCESS_NETWORK_STATE` | Weather, the Stremio row and WakaTV artwork | Install |
+| `RECORD_AUDIO` | The remote's microphone while the voice button is held | `install.sh` |
 | `ACCESS_WIFI_STATE`, `ACCESS_FINE_LOCATION` | Show the Wi-Fi network name (Android requires location for this) | `install.sh` |
 | `QUERY_ALL_PACKAGES` | List installed apps | Install |
 | `RECEIVE_BOOT_COMPLETED` | Open at boot | Install |
 | `WRITE_SECURE_SETTINGS` | Switch the Home button service back on | `install.sh` (ADB) |
-| Accessibility service | Take over the Home button | `install.sh` |
+| Accessibility service | Take over the Home button and the voice button; read WakaTV's screens (only WakaTV and Xiaomi's home are watched) | `install.sh` |
 | Notification listener | Read media sessions for Now Playing | `install.sh` |
 
 ## Performance notes

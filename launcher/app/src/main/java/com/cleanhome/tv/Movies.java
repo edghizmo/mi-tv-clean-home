@@ -39,12 +39,21 @@ final class Movies {
     static final class Movie {
         final String id, name, year;
         final File poster;
+        // Continue on WakaTV: fraction watched (-1 for unknown) and time left.
+        final float progress;
+        final String note;
 
         Movie(String id, String name, String year, File poster) {
+            this(id, name, year, poster, -1f, "");
+        }
+
+        Movie(String id, String name, String year, File poster, float progress, String note) {
             this.id = id;
             this.name = name;
             this.year = year;
             this.poster = poster;
+            this.progress = progress;
+            this.note = note;
         }
 
         Intent intent() {
@@ -122,7 +131,7 @@ final class Movies {
         }
     }
 
-    private static byte[] get(String u) throws Exception {
+    static byte[] get(String u) throws Exception {
         HttpURLConnection con = (HttpURLConnection) new URL(u).openConnection();
         try {
             con.setConnectTimeout(10000);

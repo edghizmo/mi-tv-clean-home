@@ -16,6 +16,7 @@ PKG=com.cleanhome.tv
 APK="$ROOT/launcher/app/build/outputs/apk/debug/app-debug.apk"
 
 if [ "$1" != "--no-build" ]; then
+  tools/get-voice-model.sh
   echo "sdk.dir=$ANDROID_HOME" > launcher/local.properties
   (cd launcher && "$GRADLE" --quiet assembleDebug)
 fi
@@ -28,6 +29,8 @@ TV shell "pm grant $PKG android.permission.ACCESS_FINE_LOCATION"
 TV shell "pm grant $PKG android.permission.WRITE_SECURE_SETTINGS"
 # Now Playing widget: lets the launcher see other apps' media sessions.
 TV shell "cmd notification allow_listener $PKG/$PKG.MediaListener"
+# Voice commands: the remote's microphone while the voice button is held.
+TV shell "pm grant $PKG android.permission.RECORD_AUDIO"
 # Xiaomi force-stops every non-system app when the TV goes to standby; apps in
 # this list are spared. It is read at boot, so it takes effect after a restart.
 WL="$(TV shell 'settings get system str_killbackgroud_pkg_white_list' | tr -d '\r\n')"

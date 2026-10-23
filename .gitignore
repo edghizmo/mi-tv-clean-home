@@ -30,3 +30,9 @@ launcher/local.properties
 
 .DS_Store
 .claude/
+
+# Vosk speech model (71 MB, fetched by tools/get-voice-model.sh)
+launcher/app/src/main/assets/model-en-us/
+
+# Personal voice recordings from mic tests
+demo/voice-test/

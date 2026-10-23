@@ -12,6 +12,8 @@
     <!-- Only used to read the Wi-Fi network name; granted over ADB by install.sh. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Voice commands: records the remote's mic while its voice button is held (granted by install.sh). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Lets the launcher switch its Home button service back on; granted by install.sh. -->
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
 

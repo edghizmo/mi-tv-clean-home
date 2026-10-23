@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A "Continue on WakaTV" card, Netflix style: the title's backdrop with its
+     name on a dark fade and a red progress bar along the bottom edge. Uses the
+     same view ids as item_poster so the row code handles both. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="14dp"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <FrameLayout
+        android:id="@+id/card"
+        android:layout_width="320dp"
+        android:layout_height="180dp"
+        android:background="@drawable/card_bg"
+        android:clipToOutline="true">
+
+        <!-- Unused here: the name is always shown over the art. -->
+        <TextView
+            android:id="@+id/poster_name"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/poster"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="96dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/landscape_scrim" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="16dp">
+
+            <TextView
+                android:id="@+id/card_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFFFF"
+                android:textSize="19sp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:shadowColor="#99000000"
+                android:shadowRadius="6" />
+
+            <TextView
+                android:id="@+id/card_sub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="#CCFFFFFF"
+                android:textSize="13sp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- How far in; the fill's width is set in code. -->
+        <FrameLayout
+            android:id="@+id/progress"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_gravity="bottom"
+            android:background="#59FFFFFF"
+            android:visibility="gone">
+
+            <View
+                android:id="@+id/progress_fill"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:background="#FFE50914" />
+        </FrameLayout>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/label"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_horizontal"
+        android:textColor="#FFFFFFFF"
+        android:textSize="15sp"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:alpha="0" />
+</LinearLayout>
