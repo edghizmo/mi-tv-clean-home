@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged"
+    android:accessibilityEventTypes="typeWindowStateChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:accessibilityFlags="flagRequestFilterKeyEvents|flagReportViewIds"
+    android:accessibilityFlags="flagRequestFilterKeyEvents"
     android:canRequestFilterKeyEvents="true"
-    android:canRetrieveWindowContent="true"
-    android:packageNames="com.xiaomi.mitv.settings,com.mitv.tvhome,com.mm.droid.livetv.wakatv"
+    android:canRetrieveWindowContent="false"
+    android:packageNames="com.xiaomi.mitv.settings,com.mitv.tvhome"
     android:notificationTimeout="0"
     android:description="@string/home_key_service_desc" />

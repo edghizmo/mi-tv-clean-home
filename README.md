@@ -24,7 +24,7 @@ It was built and tested on a **Xiaomi Mi TV, model MiTV-MFTR0** (Chinese-market 
 | **Your apps** | Behind the 应用 (Apps) menu | Dock for four favourites, plus a grid of the rest |
 | **Inputs** | Behind the 信号源 (Source) menu | Inputs pill: HDMI 1–4, AV, Live TV |
 | **Background services** | Telemetry, push, ads, shopping, cleaner and more | Disabled (and reversible), see [`debloat-list.txt`](debloat-list.txt) |
-| **Network** | Loads its streaming catalogue, artwork and promotions | Only weather, the Stremio row and WakaTV artwork, only when needed |
+| **Network** | Loads its streaming catalogue, artwork and promotions | Only weather and the Stremio row, only when Home opens |
 
 ## Features
 
@@ -32,7 +32,6 @@ It was built and tested on a **Xiaomi Mi TV, model MiTV-MFTR0** (Chinese-market 
 |---|---|
 | **Clean home screen** | Large clock, greeting, date and local weather over an ambient wallpaper. The focused dock app's name glows in its own colour. |
 | **Dock** | Four favourite apps in a frosted-glass band (Stremio, WakaTV, Spotify and SmartTube by default). |
-| **Continue on WakaTV** | Netflix-style wide cards for what you were watching in WakaTV: the title's backdrop, a red progress bar and the time left. OK opens WakaTV and steers it back to the title (work in progress). |
 | **Popular on Stremio** | Posters of Stremio's 20 most popular movies. OK opens the movie's page straight in Stremio. |
 | **App grid** | Every other installed app, 4 per row, using each app's TV banner. |
 | **Now Playing** | While music or video plays, a card under the top bar shows the artwork, title and artist, with previous / play-pause / next controls. |
@@ -62,9 +61,8 @@ The wallpaper pack, generated from code in [`tools/make-wallpapers.py`](tools/ma
 |---|---|---|---|---|---|
 | **Top bar** (Inputs, Wi-Fi, Wallpaper, Settings) | Next pill | | Now Playing card, or the dock | Open it | Dock |
 | **Now Playing card** | | Pill above | Dock | Media controls | Dock |
-| **Dock** | Next app | Top bar | Continue on WakaTV (or Popular on Stremio) | Open the app | |
-| **Continue on WakaTV** | Scroll cards | Dock | Popular on Stremio | Resume in WakaTV | Dock |
-| **Popular on Stremio** | Scroll posters | Continue on WakaTV (or the dock) | App grid | Open in Stremio | Dock |
+| **Dock** | Next app | Top bar | Popular on Stremio | Open the app | |
+| **Popular on Stremio** | Scroll posters | Dock | App grid | Open in Stremio | Dock |
 | **App grid** | Next app | Row above | Row below | Open the app | Dock |
 | **Wallpaper gallery** | Preview the next wallpaper | | | Keep it | Cancel |
 
@@ -166,8 +164,7 @@ To undo everything: `./restore.sh` puts back every disabled app and the stock Xi
 - **Background audio.** Android's cached-app freezer was pausing SmartTube when it played behind the home screen. `install.sh` turns the freezer off.
 - **Screensaver.** Android's screensavers can't run on this firmware (`config_dreamsSupported` is off) and Xiaomi's screensaver app is removed by the debloat, so the TV used to go straight to sleep. The launcher shows its own screensaver instead, only on the home screen.
 - **Voice commands.** The voice button sends only scan code 63; the launcher's accessibility service catches it, records the remote's microphone (`MIBT.VoiceControl`) while it is held, and Vosk turns that into text on the TV, offline. Google's speech service can't run here (Play services reports `SERVICE_INVALID`), and Xiao Ai (`com.xiaomi.voicecontrol`, plus its always-listening `com.xiaomi.wakeupservice`) is disabled so it doesn't grab the microphone. Feedback uses system toasts, never an overlay window: Xiaomi force-stops any app with a "system window" when another app opens, which also switches the Home service off. The 71 MB model isn't in git; `install.sh` fetches it with `tools/get-voice-model.sh` (SHA-256 checked).
-- **Continue on WakaTV.** WakaTV shares nothing with other apps: no media session, no deep links, and Android TV's Watch Next list is readable only by system apps. So the Home-button accessibility service reads WakaTV's own screens (by view id): the title and IMDb id on a movie page, and the title and elapsed/total time on the player's controls. Artwork is the title's backdrop, found by IMDb id (or by name through Cinemeta when playback started straight from WakaTV's own list). Choosing a card opens WakaTV and the service presses through to the title; it only presses visible items and backs out if WakaTV's exit prompt appears.
-- **Private by default.** The launcher only goes online for the weather (Open-Meteo), the Stremio catalogue and artwork for titles you watched in WakaTV. Nothing about what you watch leaves the TV beyond those artwork lookups. There are no accounts, analytics or ads.
+- **Private by default.** The launcher only goes online for the weather (Open-Meteo) and the Stremio catalogue, and only when Home opens. There are no accounts, analytics or ads.
 
 Read [docs/LAUNCHER.md](docs/LAUNCHER.md) for the launcher's design, code map and permissions.
 
@@ -182,7 +179,7 @@ Read [docs/LAUNCHER.md](docs/LAUNCHER.md) for the launcher's design, code map an
 
 - Font: [Outfit](https://fonts.google.com/specimen/Outfit) (SIL Open Font License, included in `launcher/app/src/main/assets/fonts/OFL.txt`).
 - Weather: [Open-Meteo](https://open-meteo.com) (free, no key).
-- Movie catalogue and posters: Stremio's public Cinemeta add-on; WakaTV backdrops from the same image service (metahub).
+- Movie catalogue and posters: Stremio's public Cinemeta add-on.
 - Wallpapers: original, generated by this project. "PS5-like" describes the style only.
 
 Not affiliated with Xiaomi, Apple, Sony, Stremio or any app shown. App icons and movie posters in the screenshots belong to their owners.

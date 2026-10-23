@@ -63,13 +63,11 @@ import java.util.concurrent.Executors;
  *   top bar  : Left/Right between pills, ends stop; Down -> the Now Playing
  *              card below them while something plays, else the dock;
  *              from the card Up -> back to that pill, Down -> dock
- *   dock     : Left/Right between the four apps; Up -> top bar; Down -> rows
- *   rows     : poster rows, "Continue on WakaTV" then "Popular on Stremio";
- *              Left/Right scroll a row (each keeps its place); Up/Down move
- *              between rows, Up from the first -> dock, Down from the last ->
- *              the grid tile below
- *   grid     : 4 columns; Up/Down move exactly one row; Up from row 0 -> last poster row
- *   (with no poster rows, dock and grid link directly)
+ *   dock     : Left/Right between the four apps; Up -> top bar; Down -> movies
+ *   movies   : "Popular on Stremio" posters; Left/Right scroll the row;
+ *              Up -> dock; Down -> the grid tile below
+ *   grid     : 4 columns; Up/Down move exactly one row; Up from row 0 -> movies
+ *   (with Stremio missing or no movies cached, dock and grid link directly)
  *   menu     : the pill dropdowns; Up/Down, Enter chooses, Back/Left/Right close
  *   gallery  : the Wallpaper pill's picker; Left/Right preview wallpapers
  *              full screen, OK keeps one, Back restores the previous one
@@ -89,8 +87,6 @@ public class HomeActivity extends Activity {
     private static final float TILE_SCALE = 1.08f, PILL_SCALE = 1.06f;
     // Movies row: fixed height, and how far its posters sit below the row's top.
     private static final int MOVIES_ROW_DP = 290, MOVIES_POSTER_TOP_DP = 44, POSTER_WIDTH_DP = 120;
-    // Continue on WakaTV uses wide (16:9) cards, the same height as the posters.
-    private static final int LANDSCAPE_WIDTH_DP = 320;
 
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     // Wallpaper decoding has its own thread, so gallery previews never wait
@@ -120,24 +116,8 @@ public class HomeActivity extends Activity {
 
     private List<AppEntry> dock = Collections.emptyList();
     private List<AppEntry> grid = Collections.emptyList();
-    /** A poster row between the dock and the grid. */
-    private static final class Row {
-        final String title;
-        final boolean waka;
-        final List<Movies.Movie> items;
-        final Map<String, Bitmap> posters;
-        int idx;
-
-        Row(String title, boolean waka, List<Movies.Movie> items, Map<String, Bitmap> posters) {
-            this.title = title;
-            this.waka = waka;
-            this.items = items;
-            this.posters = posters;
-        }
-    }
-
-    private List<Row> rows = Collections.emptyList();
-    private int rowIdx;
+    private List<Movies.Movie> movies = Collections.emptyList();
+    private Map<String, Bitmap> posters = Collections.emptyMap();
 
     // Header views (rebound whenever the header item is bound).
     private TextView greeting, clock, date, hero, wifiName, weatherTemp;
@@ -162,7 +142,7 @@ public class HomeActivity extends Activity {
     private final List<Runnable> menuActions = new ArrayList<>();
     private final List<View> menuRows = new ArrayList<>();
 
-    private int section = DOCK, topIdx = 0, dockIdx = 0, gridIdx = 0, menuIdx = 0;
+    private int section = DOCK, topIdx = 0, dockIdx = 0, gridIdx = 0, menuIdx = 0, movieIdx = 0;
     private View focusedCard, focusedLabel;
     private String wifiLabel = "Wi-Fi";
     private boolean visible;
@@ -285,8 +265,6 @@ public class HomeActivity extends Activity {
         updateClock();
         loadWallpaper();
         Movies.refreshIfStale(this, io, this::loadMovies);
-        Waka.listener = this::loadMovies;
-        loadMovies();
         nowPlaying.start();
         resetIdle();
     }
@@ -306,9 +284,8 @@ public class HomeActivity extends Activity {
                 .putInt("top", topIdx)
                 .putInt("dock", dockIdx)
                 .putString("grid", gridIdx < grid.size() ? grid.get(gridIdx).pkg() : null)
-                .putString("row", rowIdx < rows.size() ? rows.get(rowIdx).title : null)
+                .putString("movie", movieIdx < movies.size() ? movies.get(movieIdx).id : null)
                 .apply();
-        Waka.listener = null;
     }
 
     @Override
@@ -380,65 +357,46 @@ public class HomeActivity extends Activity {
         });
     }
 
-    /** Builds the poster rows from the cached lists and decodes their posters. */
+    /** Reads the cached "Popular on Stremio" list and decodes its posters. */
     private void loadMovies() {
         io.execute(() -> {
-            List<Row> r = new ArrayList<>();
-            if (installed(Waka.PKG)) addRow(r, "Continue on WakaTV", true, Waka.cached(this));
-            if (installed(Movies.STREMIO)) addRow(r, "Popular on Stremio", false, Movies.cached(this));
+            boolean installed;
+            try {
+                getPackageManager().getPackageInfo(Movies.STREMIO, 0);
+                installed = true;
+            } catch (Exception e) {
+                installed = false;
+            }
+            List<Movies.Movie> m = installed ? Movies.cached(this) : Collections.emptyList();
+            Map<String, Bitmap> bmps = new HashMap<>();
+            for (Movies.Movie x : m) {
+                Bitmap b = Movies.decode(x.poster, dp(POSTER_WIDTH_DP));
+                if (b != null) bmps.put(x.id, b);
+            }
             runOnUiThread(() -> {
                 if (isDestroyed()) return;
-                String keepRow = rowIdx < rows.size() ? rows.get(rowIdx).title : prefs.getString("row", null);
-                for (Row n : r) {
-                    for (Row o : rows) {
-                        if (!o.title.equals(n.title) || o.idx >= o.items.size()) continue;
-                        String id = o.items.get(o.idx).id;
-                        for (int i = 0; i < n.items.size(); i++) if (n.items.get(i).id.equals(id)) n.idx = i;
-                    }
+                String keepId = movieIdx < movies.size() ? movies.get(movieIdx).id
+                        : prefs.getString("movie", null);
+                movies = m;
+                posters = bmps;
+                movieIdx = 0;
+                for (int i = 0; i < movies.size(); i++) {
+                    if (movies.get(i).id.equals(keepId)) movieIdx = i;
                 }
-                rows = r;
-                rowIdx = 0;
-                for (int i = 0; i < rows.size(); i++) if (rows.get(i).title.equals(keepRow)) rowIdx = i;
-                if (section == MOVIES && rows.isEmpty()) section = DOCK;
+                if (section == MOVIES && movies.isEmpty()) section = DOCK;
                 adapter.notifyDataSetChanged();
                 list.post(() -> applyFocus(false));
             });
         });
     }
 
-    private void addRow(List<Row> r, String title, boolean waka, List<Movies.Movie> items) {
-        if (items.isEmpty()) return;
-        Map<String, Bitmap> bmps = new HashMap<>();
-        for (Movies.Movie x : items) {
-            Bitmap b = Movies.decode(x.poster, dp(waka ? LANDSCAPE_WIDTH_DP : POSTER_WIDTH_DP));
-            if (b != null) bmps.put(x.id, b);
-        }
-        r.add(new Row(title, waka, items, bmps));
-    }
-
-    private boolean installed(String pkg) {
-        try {
-            getPackageManager().getPackageInfo(pkg, 0);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /** The focused poster row (an empty one before the rows have loaded). */
-    private Row row() {
-        return rowIdx < rows.size() ? rows.get(rowIdx) : NO_ROW;
-    }
-
-    private static final Row NO_ROW = new Row("", false, Collections.emptyList(), Collections.emptyMap());
-
-    /** Adapter position of the first app tile: after the header and the poster rows. */
+    /** Adapter position of the first app tile: after the header and the movies row. */
     private int gridStart() {
-        return 1 + rows.size();
+        return movies.isEmpty() ? 1 : 2;
     }
 
     private int moviesHeight() {
-        return rows.size() * dp(MOVIES_ROW_DP);
+        return movies.isEmpty() ? 0 : dp(MOVIES_ROW_DP);
     }
 
     /** Scroll offset of a grid row's top. */
@@ -794,28 +752,21 @@ public class HomeActivity extends Activity {
                 if (k == KeyEvent.KEYCODE_DPAD_LEFT) dockIdx = Math.max(0, dockIdx - 1);
                 else if (k == KeyEvent.KEYCODE_DPAD_RIGHT) dockIdx = Math.min(dock.size() - 1, dockIdx + 1);
                 else if (k == KeyEvent.KEYCODE_DPAD_UP) section = TOP;
-                else if (k == KeyEvent.KEYCODE_DPAD_DOWN && !rows.isEmpty()) {
-                    section = MOVIES;
-                    rowIdx = 0;
-                }
+                else if (k == KeyEvent.KEYCODE_DPAD_DOWN && !movies.isEmpty()) section = MOVIES;
                 else if (k == KeyEvent.KEYCODE_DPAD_DOWN && !grid.isEmpty()) {
                     section = GRID;
                     gridIdx = Math.min(dockIdx, grid.size() - 1);
                 }
                 break;
-            case MOVIES: {
-                Row r = row();
-                if (k == KeyEvent.KEYCODE_DPAD_LEFT) r.idx = Math.max(0, r.idx - 1);
-                else if (k == KeyEvent.KEYCODE_DPAD_RIGHT) r.idx = Math.min(r.items.size() - 1, r.idx + 1);
-                else if (k == KeyEvent.KEYCODE_DPAD_UP && rowIdx > 0) rowIdx--;
+            case MOVIES:
+                if (k == KeyEvent.KEYCODE_DPAD_LEFT) movieIdx = Math.max(0, movieIdx - 1);
+                else if (k == KeyEvent.KEYCODE_DPAD_RIGHT) movieIdx = Math.min(movies.size() - 1, movieIdx + 1);
                 else if (k == KeyEvent.KEYCODE_DPAD_UP && !dock.isEmpty()) section = DOCK;
-                else if (k == KeyEvent.KEYCODE_DPAD_DOWN && rowIdx < rows.size() - 1) rowIdx++;
                 else if (k == KeyEvent.KEYCODE_DPAD_DOWN && !grid.isEmpty()) {
                     section = GRID;
-                    gridIdx = Math.min(columnUnder(movieView(rowIdx, r.idx, R.id.card)), grid.size() - 1);
+                    gridIdx = Math.min(columnUnder(movieView(movieIdx, R.id.card)), grid.size() - 1);
                 }
                 break;
-            }
             case GRID: {
                 int col = gridIdx % COLS;
                 if (k == KeyEvent.KEYCODE_DPAD_LEFT) {
@@ -823,9 +774,8 @@ public class HomeActivity extends Activity {
                 } else if (k == KeyEvent.KEYCODE_DPAD_RIGHT) {
                     if (col < COLS - 1 && gridIdx + 1 < grid.size()) gridIdx++;
                 } else if (k == KeyEvent.KEYCODE_DPAD_UP) {
-                    if (gridIdx < COLS && !rows.isEmpty()) {
+                    if (gridIdx < COLS && !movies.isEmpty()) {
                         section = MOVIES;
-                        rowIdx = rows.size() - 1;
                     } else if (gridIdx < COLS) {
                         section = DOCK;
                         dockIdx = Math.min(col, dock.size() - 1);
@@ -865,7 +815,7 @@ public class HomeActivity extends Activity {
             case TOP: return topIdx;
             case DOCK: return dockIdx;
             case GRID: return gridIdx;
-            case MOVIES: return rowIdx * 100 + row().idx;
+            case MOVIES: return movieIdx;
             case GALLERY: return galleryIdx;
             case PLAYER: return playerIdx;
             default: return menuIdx;
@@ -893,11 +843,7 @@ public class HomeActivity extends Activity {
                 if (gridIdx < grid.size()) launch(grid.get(gridIdx));
                 break;
             case MOVIES:
-                if (rowIdx < rows.size()) {
-                    Row r = row();
-                    if (r.waka) launchWaka(r.items.get(r.idx));
-                    else launchMovie(r.items.get(r.idx));
-                }
+                if (movieIdx < movies.size()) launchMovie(movies.get(movieIdx));
                 break;
             case GALLERY:
                 closeGallery(true, true);
@@ -966,10 +912,10 @@ public class HomeActivity extends Activity {
                 break;
             }
             case MOVIES: {
-                final int r = rowIdx, i = row().idx;
-                card = movieView(r, i, R.id.card);
-                label = movieView(r, i, R.id.label);
-                target = () -> movieView(r, i, R.id.card);
+                final int i = movieIdx;
+                card = movieView(i, R.id.card);
+                label = movieView(i, R.id.label);
+                target = () -> movieView(i, R.id.card);
                 break;
             }
             case GALLERY: {
@@ -1001,9 +947,9 @@ public class HomeActivity extends Activity {
 
         int y = 0;
         if (section == GRID) y = gridTop(gridIdx / COLS) - restingY();
-        else if (section == MOVIES) y = list.getHeight() + rowIdx * dp(MOVIES_ROW_DP) + dp(MOVIES_POSTER_TOP_DP) - restingY();
+        else if (section == MOVIES) y = list.getHeight() + dp(MOVIES_POSTER_TOP_DP) - restingY();
         scrollTo(y, animate);
-        if (section == MOVIES) scrollStrip(movieView(rowIdx, row().idx, R.id.card), animate);
+        if (section == MOVIES) scrollStrip(movieView(movieIdx, R.id.card), animate);
         if (section == GALLERY) scrollStrip(galleryCard(galleryIdx), animate);
         updateHero(animate);
         highlight.setTarget(target, radius, animate);
@@ -1041,16 +987,16 @@ public class HomeActivity extends Activity {
             int pos = list.getChildAdapterPosition(c);
             if (pos == RecyclerView.NO_POSITION) continue;
             if (pos == 0) return -c.getTop();
-            if (pos < gridStart()) return list.getHeight() + (pos - 1) * dp(MOVIES_ROW_DP) - c.getTop();
+            if (pos < gridStart()) return list.getHeight() - c.getTop();
             return gridTop((pos - gridStart()) / COLS) - c.getTop();
         }
         return 0;
     }
 
-    /** A view inside poster i of poster row r, or null if the row isn't laid out. */
-    private View movieView(int r, int i, int id) {
-        if (r >= rows.size()) return null;
-        RecyclerView.ViewHolder h = list.findViewHolderForAdapterPosition(1 + r);
+    /** A view inside poster i of the movies row, or null if the row isn't laid out. */
+    private View movieView(int i, int id) {
+        if (movies.isEmpty()) return null;
+        RecyclerView.ViewHolder h = list.findViewHolderForAdapterPosition(1);
         if (h == null) return null;
         ViewGroup strip = h.itemView.findViewById(R.id.movies_strip);
         return strip == null || i >= strip.getChildCount() ? null : strip.getChildAt(i).findViewById(id);
@@ -1241,12 +1187,8 @@ public class HomeActivity extends Activity {
         label.setAlpha(focused ? 1f : 0f);
     }
 
-    private void bindMovies(View v, int r) {
-        Row row = rows.get(r);
-        List<Movies.Movie> movies = row.items;
-        TextView title = v.findViewById(R.id.movies_title);
-        title.setText(row.title);
-        font(title, 400);
+    private void bindMovies(View v) {
+        font(v.findViewById(R.id.movies_title), 400);
         HorizontalScrollView sv = v.findViewById(R.id.movies_scroll);
         sv.setOnScrollChangeListener((s, x, y, ox, oy) -> highlight.poke());
         ViewGroup strip = v.findViewById(R.id.movies_strip);
@@ -1256,7 +1198,7 @@ public class HomeActivity extends Activity {
             for (int i = 0; i < strip.getChildCount(); i++) {
                 View card = strip.getChildAt(i).findViewById(R.id.card);
                 View label = strip.getChildAt(i).findViewById(R.id.label);
-                boolean focused = section == MOVIES && r == rowIdx && i == row.idx;
+                boolean focused = section == MOVIES && i == movieIdx;
                 setFocusedVisual(card, label, focused, false, TILE_SCALE);
                 if (focused) {
                     focusedCard = card;
@@ -1270,19 +1212,18 @@ public class HomeActivity extends Activity {
         LayoutInflater inf = LayoutInflater.from(this);
         for (int i = 0; i < movies.size(); i++) {
             Movies.Movie m = movies.get(i);
-            View p = inf.inflate(row.waka ? R.layout.item_landscape : R.layout.item_poster, strip, false);
-            Bitmap b = row.posters.get(m.id);
+            View p = inf.inflate(R.layout.item_poster, strip, false);
+            Bitmap b = posters.get(m.id);
             ((ImageView) p.findViewById(R.id.poster)).setImageBitmap(b);
             TextView name = p.findViewById(R.id.poster_name);
             name.setText(m.name);
             name.setVisibility(b == null ? View.VISIBLE : View.GONE);
             font(name, 400);
             TextView label = p.findViewById(R.id.label);
-            label.setText(row.waka && !m.note.isEmpty() ? m.note : m.name);
+            label.setText(m.name);
             font(label, 400);
-            if (row.waka) bindLandscape(p, m);
             View card = p.findViewById(R.id.card);
-            boolean focused = section == MOVIES && r == rowIdx && i == row.idx;
+            boolean focused = section == MOVIES && i == movieIdx;
             card.setScaleX(focused ? TILE_SCALE : 1f);
             card.setScaleY(focused ? TILE_SCALE : 1f);
             label.setAlpha(focused ? 1f : 0f);
@@ -1292,23 +1233,7 @@ public class HomeActivity extends Activity {
             }
             strip.addView(p);
         }
-        sv.post(() -> scrollStrip(movieView(r, row.idx, R.id.card), false));
-    }
-
-    /** The Continue on WakaTV extras: name and episode over the art, and the progress bar. */
-    private void bindLandscape(View p, Movies.Movie m) {
-        TextView title = p.findViewById(R.id.card_title);
-        title.setText(m.name);
-        font(title, 600);
-        TextView sub = p.findViewById(R.id.card_sub);
-        sub.setText(m.year);
-        sub.setVisibility(m.year.isEmpty() ? View.GONE : View.VISIBLE);
-        font(sub, 400);
-        if (m.progress >= 0) {
-            p.findViewById(R.id.progress).setVisibility(View.VISIBLE);
-            p.findViewById(R.id.progress_fill).getLayoutParams().width =
-                    Math.round(dp(LANDSCAPE_WIDTH_DP) * Math.min(1f, m.progress));
-        }
+        sv.post(() -> scrollStrip(movieView(movieIdx, R.id.card), false));
     }
 
     /** Width of one dock tile: a quarter of the band's inner width. */
@@ -1685,17 +1610,6 @@ public class HomeActivity extends Activity {
         }
     }
 
-    /** Opens WakaTV and lets HomeKeyService steer it to the title and press Play. */
-    private void launchWaka(Movies.Movie m) {
-        Intent app = getPackageManager().getLeanbackLaunchIntentForPackage(Waka.PKG);
-        if (app == null) app = getPackageManager().getLaunchIntentForPackage(Waka.PKG);
-        if (app == null || !start(app.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))) {
-            Toast.makeText(this, "Can't open WakaTV", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Waka.open(m.name);
-    }
-
     private void openSettings(String action) {
         if (start(new Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))) return;
         if (start(new Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))) return;
@@ -1780,7 +1694,7 @@ public class HomeActivity extends Activity {
             if (position == 0) {
                 bindHeader(h.itemView);
             } else if (position < gridStart()) {
-                bindMovies(h.itemView, position - 1);
+                bindMovies(h.itemView);
             } else {
                 int i = position - gridStart();
                 boolean focused = section == GRID && gridIdx == i;
