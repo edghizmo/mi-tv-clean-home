@@ -111,10 +111,12 @@ What was disabled, by group:
   `com.xiaomi.hyper_connect.tv` + `com.xiaomi.mi_connect_service`; system
   updates `com.xiaomi.mitv.upgrade`; weather `com.xiaomi.tweather`
 
-Kept on purpose: Google Play services (Spotify/Stremio may need it), the
-voice assistant (`com.xiaomi.voicecontrol` + `com.xiaomi.wakeupservice`, turned
-back on later), the TV player and MediaTek input services
-(needed for HDMI/AV/Live TV), Media Explorer, Gallery and Calendar.
+Kept on purpose: Google Play services (Spotify/Stremio may need it), the TV
+player and MediaTek input services (needed for HDMI/AV/Live TV), Media
+Explorer, Gallery and Calendar. Xiaomi's voice assistant
+(`com.xiaomi.voicecontrol` + `com.xiaomi.wakeupservice`) is not in the debloat
+list; `install.sh` disables it because it holds the remote's microphone, which
+Clean Home's offline voice commands need.
 
 ## Keyboard
 
@@ -208,7 +210,8 @@ run `pm install-create`, a `pm install-write` for each part, and
 
 ## Voice assistant
 
-Re-enabling `com.xiaomi.voicecontrol` does not turn its accessibility service
+Clean Home's voice commands replace Xiao Ai, which `install.sh` disables. To
+go back to Xiao Ai, enable both packages with `pm enable`. Re-enabling `com.xiaomi.voicecontrol` does not turn its accessibility service
 back on. Enable it in Settings, or run `./restore.sh` with no arguments to put
 the original accessibility setting back.
 

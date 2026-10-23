@@ -23,6 +23,13 @@ fi
 
 echo "Installing $(basename "$APK") ($(du -h "$APK" | cut -f1))"
 TV install "$APK"
+# Write the new app to flash now. Without this, turning the TV off at the
+# wall soon after an install once left Android with a record of the app but
+# no files: the launcher vanished at the next boot (its data survived).
+TV shell "sync"
+# Voice commands: Xiao Ai holds the remote's microphone, so it stays off.
+TV shell "pm disable-user --user 0 com.xiaomi.voicecontrol"
+TV shell "pm disable-user --user 0 com.xiaomi.wakeupservice"
 # Location permission is only used to read the Wi-Fi network name.
 TV shell "pm grant $PKG android.permission.ACCESS_FINE_LOCATION"
 # Lets the launcher switch its Home button service back on if it gets turned off.

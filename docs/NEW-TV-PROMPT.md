@@ -78,8 +78,9 @@ Store (`com.android.vending`).
 
 **Never disable:** `com.mitv.tvhome` (stock home: must stay enabled, see
 section 3), Google Play services/GSF, the TV player and MediaTek input
-services, Media Explorer, Gallery, Calendar, and the voice assistant
-(`com.xiaomi.voicecontrol` + `com.xiaomi.wakeupservice`: I keep it). Don't
+services, Media Explorer, Gallery and Calendar. Xiaomi's voice assistant
+(`com.xiaomi.voicecontrol` + `com.xiaomi.wakeupservice`) is left to
+`install.sh`, which disables it for Clean Home's voice commands. Don't
 disable Sogou until Gboard is installed (section 5).
 
 Never uninstall system packages; screenshot the home screen after debloating.
